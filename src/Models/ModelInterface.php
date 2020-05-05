@@ -6,6 +6,13 @@ namespace Lubyshev\Models;
 interface ModelInterface
 {
     /**
+     * Возвращает имя таблицы.
+     *
+     * @return string
+     */
+    public static function tableName(): string;
+
+    /**
      * Является ли запись новой.
      *
      * @return bool
@@ -68,6 +75,15 @@ interface ModelInterface
      * @return $this
      */
     public function set(string $name, $value, bool $ignoreChanges = false): self;
+
+    /**
+     * Удаляет поле из списка измененных.
+     *
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function unsetChanges(?string $name = null): self;
 
     /**
      * Возвращает список измененных полей.

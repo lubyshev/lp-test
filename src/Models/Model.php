@@ -61,7 +61,7 @@ abstract class Model implements ModelInterface
     /**
      * @inheritDoc
      */
-    public function markRecordAsNew(): ModelInterface
+    public function markRecordAsNew(): self
     {
         $this->isNew = true;
 
@@ -71,7 +71,7 @@ abstract class Model implements ModelInterface
     /**
      * @inheritDoc
      */
-    public function markRecordAsExists(): ModelInterface
+    public function markRecordAsExists(): self
     {
         $this->isNew = false;
 
@@ -103,7 +103,7 @@ abstract class Model implements ModelInterface
     /**
      * @inheritDoc
      */
-    public function setPk(array $value): ModelInterface
+    public function setPk(array $value): self
     {
         if ($this->checkPk($value)) {
             foreach (static::getPrimaryKeyName() as $key) {
@@ -134,4 +134,22 @@ abstract class Model implements ModelInterface
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
+    abstract public static function tableName(): string;
+
+    /**
+     * @inheritDoc
+     */
+    public function unsetChanges(?string $name = null): self
+    {
+        if (isset($name)) {
+            if (isset($this->changedItems[$name])) {
+                unset($this->changedItems[$name]);
+            }
+        } else {
+            $this->changedItems = [];
+        }
+    }
 }

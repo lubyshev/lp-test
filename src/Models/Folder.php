@@ -5,6 +5,8 @@ namespace Lubyshev\Models;
 
 class Folder extends Model
 {
+    public const TABLE_NAME = 'folders';
+
     public const KEY_TITLE = 'title';
 
     public function getTitle(): string
@@ -19,4 +21,11 @@ class Folder extends Model
         return $this;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public static function tableName(): string
+    {
+        return self::TABLE_NAME;
+    }
 }

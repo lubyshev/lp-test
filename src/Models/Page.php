@@ -5,6 +5,8 @@ namespace Lubyshev\Models;
 
 class Page extends Model
 {
+    public const TABLE_NAME = 'pages';
+
     public const KEY_FOLDER_ID = 'folder_id';
     public const KEY_TITLE     = 'title';
     public const KEY_STATE     = 'state';
@@ -13,6 +15,12 @@ class Page extends Model
     public const STATE_EMPTY     = 'empty';
     public const STATE_DRAFT     = 'draft';
     public const STATE_PUBLISHED = 'published';
+
+    public const STATE_LIST = [
+        self::STATE_EMPTY,
+        self::STATE_DRAFT,
+        self::STATE_PUBLISHED
+    ];
 
     private Folder $folder;
 
@@ -115,6 +123,14 @@ class Page extends Model
         $this->folder = $value;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public static function tableName(): string
+    {
+        return self::TABLE_NAME;
     }
 
 }
