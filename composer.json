@@ -1,0 +1,28 @@
+{
+  "name": "lubyshev/lp-test",
+  "type": "yii2-extension",
+  "version": "0.0.1",
+  "description": "Test task for platform-LP company.",
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=7.4.0",
+    "yiisoft/yii2": "~2.0.14"
+  },
+  "autoload": {
+    "psr-4": {
+      "Lubyshev\\": "/src"
+    }
+  },
+  "scripts": {
+    "install-articles": [
+      "@php files/install-articles.php"
+    ]
+  },
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Nikolay Lubyshev",
+      "email": "lubyshev@gmail.com"
+    }
+  ]
+}
