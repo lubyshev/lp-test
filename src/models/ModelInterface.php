@@ -43,6 +43,22 @@ interface ModelInterface
     public function get(string $name);
 
     /**
+     * Возвращает PK записи.
+     *
+     * @return array|null
+     */
+    public function getPk(): ?array;
+
+    /**
+     * Устанавливает PK записи.
+     *
+     * @param array $value
+     *
+     * @return $this
+     */
+    public function setPk(array $value): self;
+
+    /**
      * Устанавливает значение поля.
      *
      * @param string $name

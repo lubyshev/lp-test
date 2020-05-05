@@ -26,7 +26,7 @@ abstract class Model implements ModelInterface
      */
     public function get(string $name)
     {
-        return $this->items[$name];
+        return isset($this->items[$name]) ? $this->items[$name] : null;
     }
 
     /**
@@ -77,4 +77,61 @@ abstract class Model implements ModelInterface
 
         return $this;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPk(): ?array
+    {
+        $result = [];
+        $pk     = static::getPrimaryKeyName();
+        foreach ($pk as $key) {
+            $value = $this->get($key);
+            if ($value) {
+                $result[$key] = $value;
+            }
+        }
+        if (empty($result)) {
+            $result = null;
+        } elseif (count($result) !== count($pk)) {
+            throw new \Exception("Incomplete primary key.");
+        }
+
+        return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setPk(array $value): ModelInterface
+    {
+        if ($this->checkPk($value)) {
+            foreach (static::getPrimaryKeyName() as $key) {
+                $this->set($key, $value[$key]);
+            }
+        }
+
+        return $this;
+    }
+
+    protected function checkPk(array $value): bool
+    {
+        $pk   = static::getPrimaryKeyName();
+        $diff = array_merge(
+            array_diff($pk, array_keys($value)),
+            array_diff(array_keys($value), $pk),
+        );
+        if (!empty($diff)) {
+            throw new \InvalidArgumentException("Invalid primary key field name.");
+        }
+        foreach ($pk as $key) {
+            if (empty($value[$key])) {
+                throw new \InvalidArgumentException("Invalid primary key value.");
+                break;
+            }
+        }
+
+        return true;
+    }
+
 }

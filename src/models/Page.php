@@ -23,7 +23,7 @@ class Page extends Model
      *
      * @throws \Exception
      */
-    public function __construct(string $textFolder)
+    public function __construct(Folder $folder, string $textFolder)
     {
         if (!is_dir($textFolder)) {
             throw new \Exception("Directory '{$textFolder}' does not exists.");
@@ -33,11 +33,14 @@ class Page extends Model
         }
         $this->textFolder = $textFolder;
         $this->text       = null;
+        $this->setFolder($folder)->setFolderId($folder->getId()['id']);
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
-        return (string)$this->get(self::KEY_TITLE);
+        $value = $this->get(self::KEY_TITLE);
+
+        return $value ? (string)$value : null;
     }
 
     public function setTitle(string $value): self
@@ -48,9 +51,11 @@ class Page extends Model
         return $this;
     }
 
-    public function getState(): string
+    public function getState(): ?string
     {
-        return (string)$this->get(self::KEY_STATE);
+        $value = $this->get(self::KEY_STATE);
+
+        return $value ? (string)$value : null;
     }
 
     public function markStateAsEmpty(): self
@@ -74,9 +79,11 @@ class Page extends Model
         return $this;
     }
 
-    public function getText(): string
+    public function getText(): ?string
     {
-        return (string)$this->get(self::KEY_TEXT);
+        $value = $this->get(self::KEY_TEXT);
+
+        return $value ? (string)$value : null;
     }
 
     public function setText(string $value): self
