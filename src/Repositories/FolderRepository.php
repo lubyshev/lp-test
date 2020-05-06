@@ -8,7 +8,6 @@ use Lubyshev\Models\Folder;
 class FolderRepository extends Repository
 {
     /**
-     * /**
      * Поиск по первичному ключу.
      *
      * @param array $pk Первичный ключ
@@ -27,22 +26,34 @@ class FolderRepository extends Repository
     }
 
     /**
-     * /**
      * Заполняет модель данными из массива.
      *
      * @param array $data Данные
      *
      * @return \Lubyshev\Models\Folder
      */
-    private static function fillModelFromArray(array $data): Folder
+    protected static function fillModelFromArray(array $data): Folder
     {
-        $model = (new Folder())
+        return (new Folder())
             ->setPk(['id' => $data['id']])
             ->markRecordAsExists()
             ->setTitle($data[Folder::KEY_TITLE])
             ->unsetChanges();
+    }
 
-        return $model;
+    public static function getTitleOrderedList(
+        int $limit,
+        int $page = 1,
+        bool $orderDesc = false,
+        int $fromId = 1
+    ): ?array {
+        return self::getList(
+            Folder::class,
+            $limit,
+            $page,
+            '`title`'.($orderDesc ? ' DESC' : ''),
+            ['id' => $fromId]
+        );
     }
 
 }

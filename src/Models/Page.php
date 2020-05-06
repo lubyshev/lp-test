@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Lubyshev\Models;
 
-use yii\db\Exception;
-
 class Page extends Model
 {
     public const TABLE_NAME = 'pages';
@@ -25,6 +23,8 @@ class Page extends Model
     ];
 
     private ?Folder $folder = null;
+
+    private bool $contentExists = false;
 
     public function getTitle(): ?string
     {
@@ -113,6 +113,25 @@ class Page extends Model
     public static function tableName(): string
     {
         return self::TABLE_NAME;
+    }
+
+    public function contentExists(): bool
+    {
+        return $this->contentExists;
+    }
+
+    public function markContentAsExists(): self
+    {
+        $this->contentExists = true;
+
+        return $this;
+    }
+
+    public function markContentAsEmpty(): self
+    {
+        $this->contentExists = false;
+
+        return $this;
     }
 
 }

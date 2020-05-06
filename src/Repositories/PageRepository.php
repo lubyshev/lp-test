@@ -4,8 +4,7 @@ declare(strict_types=1);
 namespace Lubyshev\Repositories;
 
 use yii;
-use yii\db\Exception;
-use Lubyshev\Models\Folder;
+use \Exception;
 use Lubyshev\Models\Page;
 
 class PageRepository extends Repository
@@ -57,6 +56,11 @@ class PageRepository extends Repository
                 }
             }
             $model = self::fillModelFromArray($data, $folder, $path);
+            if ($folder) {
+                $model->setFolder($folder);
+            }
+            $model->unsetChanges();
+            self::fillModelWithText($model, $path);
         }
 
         return $model;
@@ -65,13 +69,11 @@ class PageRepository extends Repository
     /**
      * Заполняет модель данными из массива.
      *
-     * @param array                        $data   Данные
-     * @param \Lubyshev\Models\Folder|null $folder Папка-хозяин
-     * @param string                       $path   Путь размещения файла с текстом
+     * @param array $data Данные
      *
      * @return \Lubyshev\Models\Page
      */
-    private static function fillModelFromArray(array $data, ?Folder $folder, string $path): Page
+    protected static function fillModelFromArray(array $data): Page
     {
         $model = new Page();
         $model
@@ -79,9 +81,6 @@ class PageRepository extends Repository
             ->markRecordAsExists()
             ->setTitle($data[Page::KEY_TITLE])
             ->setFolderId($data[Page::KEY_FOLDER_ID]);
-        if ($folder) {
-            $model->setFolder($folder);
-        }
         $hasText = true;
         switch ($data['state']) {
             case Page::STATE_EMPTY:
@@ -95,8 +94,18 @@ class PageRepository extends Repository
                 $model->markStateAsPublished();
                 break;
         }
-        $model->unsetChanges();
         if ($hasText) {
+            $model->markContentAsExists();
+        } else {
+            $model->markContentAsEmpty();
+        }
+
+        return $model;
+    }
+
+    private static function fillModelWithText(Page $model, string $path): void
+    {
+        if ($model->contentExists()) {
             $model->setText(self::getText($model, $path));
             // Если содержимое пропало.
             if (empty($model->getText())) {
@@ -108,8 +117,6 @@ class PageRepository extends Repository
                 }
             }
         }
-
-        return $model;
     }
 
     /**

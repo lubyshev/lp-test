@@ -38,7 +38,7 @@ interface ModelInterface
      *
      * @return array
      */
-    public static function getPrimaryKeyName(): array;
+    public static function getPrimaryKey(): array;
 
     /**
      * Возвращает значение поля.

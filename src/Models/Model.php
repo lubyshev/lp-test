@@ -16,7 +16,7 @@ abstract class Model implements ModelInterface
     /**
      * @inheritDoc
      */
-    public static function getPrimaryKeyName(): array
+    public static function getPrimaryKey(): array
     {
         return self::DEFAULT_PK;
     }
@@ -84,7 +84,7 @@ abstract class Model implements ModelInterface
     public function getPk(): ?array
     {
         $result = [];
-        $pk     = static::getPrimaryKeyName();
+        $pk     = static::getPrimaryKey();
         foreach ($pk as $key) {
             $value = $this->get($key);
             if ($value) {
@@ -106,7 +106,7 @@ abstract class Model implements ModelInterface
     public function setPk(array $value): self
     {
         if ($this->checkPk($value)) {
-            foreach (static::getPrimaryKeyName() as $key) {
+            foreach (static::getPrimaryKey() as $key) {
                 $this->set($key, $value[$key]);
             }
         }
@@ -116,7 +116,7 @@ abstract class Model implements ModelInterface
 
     protected function checkPk(array $value): bool
     {
-        $pk   = static::getPrimaryKeyName();
+        $pk   = static::getPrimaryKey();
         $diff = array_merge(
             array_diff($pk, array_keys($value)),
             array_diff(array_keys($value), $pk),
