@@ -15,6 +15,16 @@ class PageRepository extends Repository
      */
     private const DEFAULT_PATH = '/runtime/pages';
 
+    /**
+     * Поиск по первичному ключу.
+     *
+     * @param array       $pk         Первичный ключ
+     * @param bool        $withFolder Загрузить Folder
+     * @param string|null $path       Путь размещения файла с текстом
+     *
+     * @return \Lubyshev\Models\Page|null
+     * @throws \yii\db\Exception
+     */
     public static function findByPk(
         array $pk,
         bool $withFolder = false,
@@ -52,6 +62,15 @@ class PageRepository extends Repository
         return $model;
     }
 
+    /**
+     * Заполняет модель данными из массива.
+     *
+     * @param array                        $data   Данные
+     * @param \Lubyshev\Models\Folder|null $folder Папка-хозяин
+     * @param string                       $path   Путь размещения файла с текстом
+     *
+     * @return \Lubyshev\Models\Page
+     */
     private static function fillModelFromArray(array $data, ?Folder $folder, string $path): Page
     {
         $model = new Page();
@@ -79,9 +98,11 @@ class PageRepository extends Repository
         $model->unsetChanges();
         if ($hasText) {
             $model->setText(self::getText($model, $path));
+            // Если содержимое пропало.
             if (empty($model->getText())) {
                 $model->markStateAsEmpty();
             } else {
+                // Если файл добавили вручную.
                 if (Page::STATE_EMPTY === $model->getState()) {
                     $model->markStateAsDraft();
                 }
@@ -91,20 +112,30 @@ class PageRepository extends Repository
         return $model;
     }
 
+    /**
+     * Возвращает текст страницы.
+     *
+     * @param \Lubyshev\Models\Page $model Модель.
+     * @param string                $path  Путь размещения файла с текстом
+     *
+     * @return string|null
+     * @throws \Exception
+     */
     private static function getText(Page $model, string $path): ?string
     {
-        $id       = $model->getPk()['id'];
-        $fileName = $path."/{$id}.html";
-        if (!file_exists($fileName)) {
-            throw new Exception(
-                "Page file(id: {$id}, path: {$fileName}) does not exists."
-            );
+        $id         = $model->getPk()['id'];
+        $fileName   = $path."/{$id}.html";
+        $fileExists = file_exists($fileName);
+        if (!$fileExists) {
+            $result = null;
+        } else {
+            $result = file_get_contents($fileName);
+            if (empty(trim($result))) {
+                $result = false;
+            }
         }
-        $result = file_get_contents($fileName);
-        if (empty(trim($result))) {
-            $result = false;
-        }
-        if (!$result) {
+        // Если файл пустой.
+        if (!$result && $fileExists) {
             unlink($fileName);
         }
 
