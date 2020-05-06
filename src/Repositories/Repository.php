@@ -9,6 +9,7 @@ abstract class Repository implements RepositoryInterface
 {
     public static function getDataByPk(string $modelClass, array $pk): ?array
     {
+        /** @var \Lubyshev\Models\ModelInterface $modelClass */
         $table    = $modelClass::tableName();
         $pkFields = $modelClass::getPrimaryKeyName();
         $where    = [];

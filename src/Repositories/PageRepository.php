@@ -5,10 +5,14 @@ namespace Lubyshev\Repositories;
 
 use yii;
 use yii\db\Exception;
+use Lubyshev\Models\Folder;
 use Lubyshev\Models\Page;
 
 class PageRepository extends Repository
 {
+    /**
+     * @todo Сделать настройку в конфиге.
+     */
     private const DEFAULT_PATH = '/runtime/pages';
 
     public static function findByPk(
@@ -27,20 +31,13 @@ class PageRepository extends Repository
         }
         $model = null;
         $data  = self::getDataByPk(Page::class, $pk);
-        if (!$data) {
-            $model = null;
-        } else {
+        if ($data) {
             if (!in_array($data['state'], Page::STATE_LIST)) {
                 throw new Exception(
                     "Invalid page state(id: {$data['id']}, state: {$data['state']})."
                 );
             }
-            $model = new Page();
-            $model
-                ->setPk(['id' => $data['id']])
-                ->markRecordAsExists()
-                ->setTitle($data[$model::KEY_TITLE])
-                ->setFolderId($data[$model::KEY_FOLDER_ID]);
+            $folder = null;
             if ($withFolder) {
                 $folder = FolderRepository::findByPk(['id' => $data['folder_id']]);
                 if (!$folder) {
@@ -48,30 +45,45 @@ class PageRepository extends Repository
                         "Invalid folder(id: {$data['folder_id']}) for page(id: {$data['id']})."
                     );
                 }
-                $model->setFolder($folder);
             }
-            $hasText = true;
-            switch ($data['state']) {
-                case Page::STATE_EMPTY:
-                    $model->markStateAsEmpty();
-                    $hasText = false;
-                    break;
-                case Page::STATE_DRAFT:
+            $model = self::fillModelFromArray($data, $folder, $path);
+        }
+
+        return $model;
+    }
+
+    private static function fillModelFromArray(array $data, ?Folder $folder, string $path): Page
+    {
+        $model = new Page();
+        $model
+            ->setPk(['id' => $data['id']])
+            ->markRecordAsExists()
+            ->setTitle($data[$model::KEY_TITLE])
+            ->setFolderId($data[$model::KEY_FOLDER_ID]);
+        if ($folder) {
+            $model->setFolder($folder);
+        }
+        $hasText = true;
+        switch ($data['state']) {
+            case Page::STATE_EMPTY:
+                $model->markStateAsEmpty();
+                $hasText = false;
+                break;
+            case Page::STATE_DRAFT:
+                $model->markStateAsDraft();
+                break;
+            case Page::STATE_PUBLISHED:
+                $model->markStateAsPublished();
+                break;
+        }
+        $model->unsetChanges();
+        if ($hasText) {
+            $model->setText(self::getText($model, $path));
+            if (empty($model->getText())) {
+                $model->markStateAsEmpty();
+            } else {
+                if (Page::STATE_EMPTY === $model->getState()) {
                     $model->markStateAsDraft();
-                    break;
-                case Page::STATE_PUBLISHED:
-                    $model->markStateAsPublished();
-                    break;
-            }
-            $model->unsetChanges();
-            if ($hasText) {
-                $model->setText(self::getText($model, $path));
-                if (empty($model->getText())) {
-                    $model->markStateAsEmpty();
-                } else {
-                    if (Page::STATE_EMPTY === $model->getState()) {
-                        $model->markStateAsDraft();
-                    }
                 }
             }
         }
