@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Lubyshev\Models;
 
+use yii\db\Exception;
+
 class Page extends Model
 {
     public const TABLE_NAME = 'pages';
@@ -19,30 +21,10 @@ class Page extends Model
     public const STATE_LIST = [
         self::STATE_EMPTY,
         self::STATE_DRAFT,
-        self::STATE_PUBLISHED
+        self::STATE_PUBLISHED,
     ];
 
-    private Folder $folder;
-
-    /**
-     * Page constructor.
-     *
-     * @param string $textFolder
-     *
-     * @throws \Exception
-     */
-    public function __construct(Folder $folder, string $textFolder)
-    {
-        if (!is_dir($textFolder)) {
-            throw new \Exception("Directory '{$textFolder}' does not exists.");
-        }
-        if (!is_writable($textFolder)) {
-            throw new \Exception("Directory '{$textFolder}': permission denied.");
-        }
-        $this->textFolder = $textFolder;
-        $this->text       = null;
-        $this->setFolder($folder)->setFolderId($folder->getId()['id']);
-    }
+    private ?Folder $folder = null;
 
     public function getTitle(): ?string
     {
@@ -94,7 +76,7 @@ class Page extends Model
         return $value ? (string)$value : null;
     }
 
-    public function setText(string $value): self
+    public function setText(?string $value): self
     {
         $this->set(self::KEY_TEXT, $value, true);
 
@@ -113,7 +95,7 @@ class Page extends Model
         return $this;
     }
 
-    public function getFolder(): Folder
+    public function getFolder(): ?Folder
     {
         return $this->folder;
     }

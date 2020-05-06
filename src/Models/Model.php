@@ -26,7 +26,7 @@ abstract class Model implements ModelInterface
      */
     public function get(string $name)
     {
-        return isset($this->items[$name]) ? $this->items[$name] : null;
+        return array_key_exists($name, $this->items) ? $this->items[$name] : null;
     }
 
     /**
@@ -151,5 +151,7 @@ abstract class Model implements ModelInterface
         } else {
             $this->changedItems = [];
         }
+
+        return $this;
     }
 }
