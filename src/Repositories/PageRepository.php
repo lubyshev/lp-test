@@ -58,8 +58,8 @@ class PageRepository extends Repository
         $model
             ->setPk(['id' => $data['id']])
             ->markRecordAsExists()
-            ->setTitle($data[$model::KEY_TITLE])
-            ->setFolderId($data[$model::KEY_FOLDER_ID]);
+            ->setTitle($data[Page::KEY_TITLE])
+            ->setFolderId($data[Page::KEY_FOLDER_ID]);
         if ($folder) {
             $model->setFolder($folder);
         }

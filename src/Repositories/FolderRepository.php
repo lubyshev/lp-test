@@ -9,18 +9,24 @@ class FolderRepository extends Repository
 {
     public static function findByPk(array $pk): ?Folder
     {
-        $model = new Folder();
+        $model = null;
         $data  = self::getDataByPk(Folder::class, $pk);
         if ($data) {
-            $model
-                ->setPk(['id' => $data['id']])
-                ->markRecordAsExists()
-                ->setTitle($data[$model::KEY_TITLE])
-                ->unsetChanges();
-        } else {
-            $model = null;
+            $model = self::fillModelFromArray($data);
         }
 
         return $model;
     }
+
+    private static function fillModelFromArray(array $data): Folder
+    {
+        $model = (new Folder())
+            ->setPk(['id' => $data['id']])
+            ->markRecordAsExists()
+            ->setTitle($data[Folder::KEY_TITLE])
+            ->unsetChanges();
+
+        return $model;
+    }
+
 }
