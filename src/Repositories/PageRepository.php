@@ -32,7 +32,7 @@ class PageRepository extends Repository
         $model = null;
         $data  = self::getDataByPk(Page::class, $pk);
         if ($data) {
-            if (!in_array($data['state'], Page::STATE_LIST)) {
+            if (!in_array($data['state'], Page::STATES_LIST)) {
                 throw new Exception(
                     "Invalid page state(id: {$data['id']}, state: {$data['state']})."
                 );

@@ -18,7 +18,7 @@ class Page extends Model
     public const STATE_DRAFT     = 'draft';
     public const STATE_PUBLISHED = 'published';
 
-    public const STATE_LIST = [
+    public const STATES_LIST = [
         self::STATE_EMPTY,
         self::STATE_DRAFT,
         self::STATE_PUBLISHED,
