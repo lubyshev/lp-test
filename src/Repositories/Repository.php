@@ -184,4 +184,26 @@ abstract class Repository implements RepositoryInterface
         return (bool)$cmd->execute();
     }
 
+    public static function delete(ModelInterface $model): bool
+    {
+        if ($model->isNewRecord()) {
+            throw new \InvalidArgumentException("Can`t delete new record.");
+        }
+        $table = $model::tableName();
+        $pk    = $model::getPrimaryKey();
+        $where = [];
+        foreach ($pk as $key) {
+            $where[] = ['key' => $key, 'sign' => '='];
+        }
+        $sql =
+            " DELETE FROM `{$table}`".
+            " WHERE ".self::whereAndFromArray($table, $where);
+        $cmd = Yii::$app->db->createCommand($sql);
+        foreach ($pk as $field) {
+            $cmd->bindValue(':'.$field, $model->get($field));
+        }
+
+        return (bool)$cmd->execute();
+    }
+
 }

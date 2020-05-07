@@ -39,4 +39,6 @@ interface RepositoryInterface
 
     public static function save(ModelInterface $model): bool;
 
+    public static function delete(ModelInterface $model): bool;
+
 }
