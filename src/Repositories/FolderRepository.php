@@ -52,15 +52,23 @@ class FolderRepository extends Repository
      */
     public static function getTitleOrderedList(
         int $limit,
-        int $page = 1,
+        int $offset = 0,
         bool $orderDesc = false,
         int $fromId = 1
     ): ?array {
+        $t     = Folder::tableName();
+        $pk    = Folder::getPrimaryKey();
+        $where = [];
+        foreach ($pk as $key) {
+            $where[] = ['key' => $key, 'sign' => '>='];
+        }
+
         return self::getList(
             Folder::class,
             $limit,
-            $page,
+            $offset,
             '`title`'.($orderDesc ? ' DESC' : ''),
+            self::whereAndFromArray($t, $where),
             ['id' => $fromId]
         );
     }

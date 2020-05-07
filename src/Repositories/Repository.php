@@ -44,34 +44,30 @@ abstract class Repository implements RepositoryInterface
      * @param int    $limit      Склоько записей
      * @param int    $page       Номер страницы
      * @param string $orderBy    Обратная сортировка
-     * @param array  $fromPk     С какого PK начинать
+     * @param string $where      Условие WHERE
+     * @param array  $bindParams Key-pair параметря для PDO::bindValue()
      *
      * @return array|null
      */
     protected static function getDataList(
         string $modelClass,
         int $limit,
-        int $page,
+        int $offset,
         string $orderBy,
-        array $fromPk
+        string $where,
+        array $bindParams
     ): ?array {
         /** @var \Lubyshev\Models\ModelInterface $modelClass */
-        $table    = $modelClass::tableName();
-        $pkFields = $modelClass::getPrimaryKey();
-        $where    = [];
-        foreach ($pkFields as $key) {
-            $where[] = "`{$table}`.`{$key}` >= :{$key}";
-        }
-        $offset = $limit * ($page - 1);
-        $query  = Yii::$app->db->createCommand(
-            "SELECT * FROM `{$table}`".
-            " WHERE (".implode(' AND ', $where).")".
+        $table  = $modelClass::tableName();
+        $sql    =
+            " SELECT * FROM `{$table}`".
+            " WHERE ".$where.
             " ORDER BY {$orderBy}".
             " LIMIT {$limit}".
-            " OFFSET {$offset}"
-        );
-        foreach ($pkFields as $key) {
-            $query->bindValue(':'.$key, $fromPk[$key]);
+            " OFFSET {$offset}";
+        $query  = Yii::$app->db->createCommand($sql);
+        foreach ($bindParams as $key => $value) {
+            $query->bindValue(':'.$key, $bindParams[$key]);
         }
         $rows = $query->queryAll();
 
@@ -84,26 +80,25 @@ abstract class Repository implements RepositoryInterface
     public static function getList(
         string $modelClass,
         int $limit,
-        int $page,
+        int $offset,
         string $orderBy,
-        array $fromPk
+        string $where,
+        array $bindParams
     ): ?array {
         if ($limit <= 0) {
             throw new Exception("Invalid limit: {$limit}.");
         }
-        if ($page < 1) {
-            $page = 1;
-        }
-        if ($fromPk < 1) {
-            $fromPk = 1;
+        if ($offset < 1) {
+            $offset = 1;
         }
         $items    = null;
         $dataList = self::getDataList(
             $modelClass,
             $limit,
-            $page,
+            $offset,
             $orderBy,
-            $fromPk
+            $where,
+            $bindParams
         );
         if ($dataList) {
             foreach ($dataList as $data) {
@@ -112,6 +107,26 @@ abstract class Repository implements RepositoryInterface
         }
 
         return empty($items) ? null : $items;
+    }
+
+    public static function whereAndFromArray($table, $items)
+    {
+        return implode(' AND ', self::createWhereArray($table, $items));
+    }
+
+    public static function whereOrFromArray($table, $items): string
+    {
+        return implode(' OR ', self::createWhereArray($table, $items));
+    }
+
+    private static function createWhereArray($table, $items): array
+    {
+        $where = [];
+        foreach ($items as $item) {
+            $where[] = "`{$table}`.`{$item['key']}` {$item['sign']} :{$item['key']}";
+        }
+
+        return $where;
     }
 
 

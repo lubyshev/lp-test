@@ -23,7 +23,8 @@ interface RepositoryInterface
      * @param int    $limit
      * @param int    $page
      * @param string $orderBy
-     * @param array  $fromPk
+     * @param string $where
+     * @param array  $bindParams Key-pair параметря для PDO::bindValue()
      *
      * @return array
      */
@@ -32,7 +33,8 @@ interface RepositoryInterface
         int $limit,
         int $page,
         string $orderBy,
-        array $fromPk
+        string $where,
+        array $bindParams
     ): ?array;
 
 }
