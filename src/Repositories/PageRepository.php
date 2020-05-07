@@ -55,7 +55,7 @@ class PageRepository extends Repository
                     );
                 }
             }
-            $model = self::fillModelFromArray($data, $folder, $path);
+            $model = self::fillModelFromArray($data);
             if ($folder) {
                 $model->setFolder($folder);
             }
@@ -148,4 +148,48 @@ class PageRepository extends Repository
 
         return $result ? $result : null;
     }
+
+    /**
+     * @param int  $limit
+     * @param ?int $folderId,
+     * @param int  $offset
+     * @param bool $orderDesc
+     * @param int  $fromId
+     *
+     * @return Page[]|null
+     * @throws \Exception
+     */
+    public static function getTitleOrderedList(
+        int $limit,
+        ?int $folderId,
+        int $offset = 0,
+        bool $orderDesc = false,
+        int $fromId = 1
+    ): ?array {
+        $t     = Page::tableName();
+        $pk    = Page::getPrimaryKey();
+        $where = [];
+        foreach ($pk as $key) {
+            $where[] = ['key' => $key, 'sign' => '>='];
+        }
+        if (null !== $folderId) {
+            if ($folderId > 0) {
+                $where[] = ['key' => Page::KEY_FOLDER_ID, 'sign' => '='];
+            } else {
+                throw new \InvalidArgumentException(
+                    "Argument 'folderId' must be greater then zero."
+                );
+            }
+        }
+
+        return self::getList(
+            Page::class,
+            $limit,
+            $offset,
+            '`title`'.($orderDesc ? ' DESC' : ''),
+            self::whereAndFromArray($t, $where),
+            ['id' => $fromId]
+        );
+    }
+
 }
