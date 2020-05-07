@@ -41,6 +41,15 @@ class FolderRepository extends Repository
             ->unsetChanges();
     }
 
+    /**
+     * @param int  $limit
+     * @param int  $page
+     * @param bool $orderDesc
+     * @param int  $fromId
+     *
+     * @return Folder[]|null
+     * @throws \Exception
+     */
     public static function getTitleOrderedList(
         int $limit,
         int $page = 1,
