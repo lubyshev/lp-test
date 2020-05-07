@@ -73,4 +73,12 @@ class FolderRepository extends Repository
         );
     }
 
+    public static function create(string $title): Folder
+    {
+        $model = (new Folder())->setTitle($title);
+        self::save($model);
+
+        return $model;
+    }
+
 }

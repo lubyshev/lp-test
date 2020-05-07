@@ -42,7 +42,7 @@ abstract class Repository implements RepositoryInterface
      *
      * @param string $modelClass Класс модели.
      * @param int    $limit      Склоько записей
-     * @param int    $page       Номер страницы
+     * @param int    $offset     Смещение
      * @param string $orderBy    Обратная сортировка
      * @param string $where      Условие WHERE
      * @param array  $bindParams Key-pair параметря для PDO::bindValue()
@@ -58,14 +58,14 @@ abstract class Repository implements RepositoryInterface
         array $bindParams
     ): ?array {
         /** @var \Lubyshev\Models\ModelInterface $modelClass */
-        $table  = $modelClass::tableName();
-        $sql    =
+        $table = $modelClass::tableName();
+        $sql   =
             " SELECT * FROM `{$table}`".
             " WHERE ".$where.
             " ORDER BY {$orderBy}".
             " LIMIT {$limit}".
             " OFFSET {$offset}";
-        $query  = Yii::$app->db->createCommand($sql);
+        $query = Yii::$app->db->createCommand($sql);
         foreach ($bindParams as $key => $value) {
             $query->bindValue(':'.$key, $bindParams[$key]);
         }
@@ -88,8 +88,8 @@ abstract class Repository implements RepositoryInterface
         if ($limit <= 0) {
             throw new Exception("Invalid limit: {$limit}.");
         }
-        if ($offset < 1) {
-            $offset = 1;
+        if ($offset < 0) {
+            $offset = 0;
         }
         $items    = null;
         $dataList = self::getDataList(
@@ -129,5 +129,59 @@ abstract class Repository implements RepositoryInterface
         return $where;
     }
 
+    public static function save(ModelInterface $model): bool
+    {
+        if ($model->isNewRecord()) {
+            $result = self::insert($model);
+        } else {
+            $result = self::update($model);
+        }
+
+        return $result;
+    }
+
+    protected static function insert(ModelInterface $model): bool
+    {
+        $table  = $model::tableName();
+        $fields = $model->getChangedFields();
+        $insert = [];
+        foreach ($fields as $field) {
+            $insert[":{$field}"] = $model->get($field);
+        }
+        $sql =
+            " INSERT INTO `{$table}` (`".implode('`, `', $fields)."`)".
+            " VALUES (".implode(', ', array_keys($insert)).")";
+        $cmd = Yii::$app->db->createCommand($sql);
+        foreach ($insert as $key => $value) {
+            $cmd->bindValue($key, $value);
+        }
+
+        return (bool)$cmd->execute();
+    }
+
+    protected static function update(ModelInterface $model): bool
+    {
+        $table  = $model::tableName();
+        $pk     = $model::getPrimaryKey();
+        $fields = $model->getChangedFields();
+        $where  = [];
+        foreach ($pk as $key) {
+            $where[] = ['key' => $key, 'sign' => '='];
+        }
+        $update = [];
+        foreach ($fields as $field) {
+            $update[] = "`{$field}` = :{$field}";
+        }
+        $sql    =
+            " UPDATE `{$table}` SET ".implode(', ', $update).
+            " WHERE ".self::whereAndFromArray($table, $where);
+        $cmd    = Yii::$app->db->createCommand($sql);
+        $fields = array_merge($pk, $fields);
+        foreach ($fields as $field) {
+            $cmd->bindValue(':'.$field, $model->get($field));
+        }
+
+        return (bool)$cmd->execute();
+    }
 
 }

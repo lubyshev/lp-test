@@ -37,4 +37,6 @@ interface RepositoryInterface
         array $bindParams
     ): ?array;
 
+    public static function save(ModelInterface $model): bool;
+
 }
